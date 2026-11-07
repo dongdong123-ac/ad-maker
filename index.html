@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>제휴광고 공장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: 왼쪽 입력 패널 + 오른쪽 결과 그리드, 좁으면 한 열 */
+:root{
+  --bg:#f3f5f2; --panel:#ffffff; --ink:#1d2420; --muted:#66706a; --line:#dde3dc;
+  --accent:#1f7a52; --accent-ink:#ffffff; --warn:#c2410c; --warn-bg:#fff1e8; --ok-bg:#e8f5ee;
+  --f-display:'Black Han Sans','Malgun Gothic',sans-serif;
+  --f-body:'Noto Sans KR','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141816; --panel:#1d2320; --ink:#e8ede9; --muted:#9aa59f; --line:#313a35;
+  --accent:#43b07f; --accent-ink:#0b1a12; --warn:#ff9a5c; --warn-bg:#3a2316; --ok-bg:#1b3327; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body)}
+header{padding:22px max(16px,3vw) 8px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+header h1{font:32px var(--f-display);margin:0;letter-spacing:-.5px}
+header p{margin:0;color:var(--muted)}
+.wrap{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:20px;padding:12px max(16px,3vw) 40px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel h2{font:700 16px var(--f-body);margin:0;display:flex;justify-content:space-between;align-items:center}
+label{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:13px}
+label small{font-weight:400;color:var(--muted)}
+input,textarea,select{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;width:100%}
+textarea{resize:vertical;min-height:70px}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button{font:700 14px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:9px 14px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-size:16px;padding:13px}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1}
+details{border:1px dashed var(--line);border-radius:10px;padding:10px 12px}
+details summary{cursor:pointer;font-weight:700;font-size:13px}
+details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.status{font-size:13px;padding:10px 12px;border-radius:9px;background:var(--ok-bg)}
+.status.err{background:var(--warn-bg);color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.card canvas{width:100%;aspect-ratio:1;display:block;background:var(--line)}
+.card .body{padding:12px;display:flex;flex-direction:column;gap:8px}
+.card .copy{font-weight:700;font-size:15px}
+.card .meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--ok-bg)}
+.pill.bad{background:var(--warn-bg);color:var(--warn)}
+.card .actions{display:flex;gap:6px;flex-wrap:wrap}
+.card .actions button{flex:1;padding:7px 8px;font-size:12px}
+.card .edit{display:none;flex-direction:column;gap:6px}
+.card.editing .edit{display:flex}
+.empty{border:2px dashed var(--line);border-radius:14px;padding:40px 20px;text-align:center;color:var(--muted)}
+.copies{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.copies li{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.copies li span.t{flex:1;min-width:0}
+.copies li .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+.copies li.bad{border-color:var(--warn)}
+.copies li.bad .why{color:var(--warn);font-size:12px}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.section-title h2{font:22px var(--f-display);margin:0}
+.dialog{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+.dialog.open{display:flex}
+.dialog>div{background:var(--panel);border-radius:14px;padding:18px;width:min(760px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.dialog textarea{min-height:200px;font-size:12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>제휴광고 공장</h1>
+  <p>캠페인 정보 입력 → 30자 홍보문구 10개 + 광고 이미지 10장</p>
+</header>
+
+<div class="wrap">
+  <!-- 입력 패널 -->
+  <form class="panel" id="form" autocomplete="off">
+    <h2>캠페인 정보
+      <select id="saved" style="width:auto;font-size:12px"><option value="">저장된 캠페인</option></select>
+    </h2>
+    <label>캠페인 이름<input id="f_name" placeholder="예: 코웨이 특판몰"></label>
+    <label>브랜드명 <small>이미지 상단에 표시 (비우면 생략)</small><input id="f_brand" placeholder="예: coway"></label>
+    <label>간단한 소개 / 혜택<textarea id="f_intro" rows="5" placeholder="머천트 소개, 혜택 목록을 그대로 붙여넣기"></textarea></label>
+    <label>캠페인 링크 (상세페이지 URL)
+      <div class="row"><input id="f_url" placeholder="https://www.albarich.com/pt/..." style="flex:3"><button type="button" id="b_read" style="flex:1">읽기</button></div></label>
+    <label>상세페이지 내용 <small>「읽기」를 누르면 AI가 이미지 속 글자까지 읽어서 채워요 · 직접 고쳐도 돼요</small><textarea id="f_detail" rows="6" placeholder="링크를 넣고 「읽기」를 누르거나, 직접 붙여넣기"></textarea></label>
+    <label>금지사항 · 광고 주의사항<textarea id="f_rules" rows="5" placeholder="알바리치 금지사항을 그대로 붙여넣기"></textarea></label>
+    <label>사업자정보 <small>선택 · 넣으면 이미지 하단에 표시 (광고주가 노출을 요구할 때)</small><input id="f_biz" placeholder="예: 코웨이 햇살 대리점"></label>
+    <label>사업자 부가정보 <small>선택</small><input id="f_biz2" placeholder="예: 사업자번호 679-32-01257"></label>
+    <label>버튼 문구<input id="f_cta" value="무료상담 신청"></label>
+    <details>
+      <summary>금지어 · 스타일 설정</summary>
+      <div>
+        <label>항상 금지할 단어 <small>쉼표로 구분 · 문구에 들어가면 자동 재작성</small>
+          <textarea id="f_ban" rows="3"></textarea></label>
+        <label>이미지 분위기 <small>영어로 쓰면 더 잘 나와요</small>
+          <input id="f_style" value="clean bright Korean home interior, soft natural light, premium appliance advertising photo"></label>
+        <label>메인 색상<input id="f_color" type="color" value="#1f5fd6" style="height:42px;padding:4px"></label>
+      </div>
+    </details>
+    <details id="keybox">
+      <summary>AI 연결 (무료)</summary>
+      <div>
+        <label>Google Gemini API 키 <small>무료 · 이 브라우저에만 저장</small>
+          <input id="f_key" type="password" placeholder="AI Studio에서 받은 키"></label>
+        <p class="hint">
+        · 키 받기: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> (구글 로그인, 카드 불필요)<br>
+        · 키가 없으면: 문구는 「프롬프트 복사」로 Claude/ChatGPT에 맡기고, 이미지는 내 사진이나 기본 디자인 배경을 써요.<br>
+        · Gemini 무료 키는 이미지 생성이 막혀 있어서, 이미지는 내 사진이나 기본 디자인 배경으로 만들어요.<br>
+        · 한글 문구·사업자정보는 AI가 아니라 이 페이지가 직접 그려서 글자가 깨지지 않아요.</p>
+      </div>
+    </details>
+    <label>이미지 배경
+      <select id="f_bgmode">
+        <option value="photo">내 사진 (아래 결과에서 올리기)</option>
+                <option value="plain">기본 디자인 배경</option>
+      </select></label>
+    <div class="row">
+      <button type="button" id="b_save">캠페인 저장</button>
+      <button type="button" id="b_prompt">프롬프트 복사</button>
+    </div>
+
+    <button type="submit" class="primary" id="b_go">문구 + 이미지 10개 만들기</button>
+    <div id="status" class="status" hidden></div>
+  </form>
+
+  <!-- 결과 -->
+  <main style="min-width:0">
+    <div class="section-title">
+      <h2>홍보문구</h2>
+      <div class="row" style="flex:none">
+        <button type="button" id="b_copyall" disabled>문구 전체 복사</button>
+      </div>
+    </div>
+    <ul class="copies" id="copies"><li class="empty" style="display:block">캠페인 정보를 넣고 「만들기」를 누르면 여기에 문구 10개가 나옵니다.</li></ul>
+
+    <div class="section-title" style="margin-top:28px">
+      <h2>광고 이미지</h2>
+      <div class="row" style="flex:none">
+        <button type="button" id="b_photos">내 사진 여러 장 올리기</button>
+        <button type="button" id="b_dlall" disabled>이미지 전체 저장</button>
+      </div>
+    </div>
+    <p class="hint" id="photohint" style="margin:0 0 10px">사진을 여러 장 고르면 10장에 순서대로 돌아가며 들어가요. 사진마다 「사진 올리기」로 따로 바꿀 수도 있어요.</p>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<div class="dialog" id="dlg"><div>
+  <strong>키 없이 쓰기</strong>
+  <p class="hint">1) 아래 프롬프트가 복사됐어요. Claude나 ChatGPT에 붙여넣으세요.<br>2) 답변(JSON)을 아래 칸에 붙여넣고 「적용」을 누르세요.</p>
+  <textarea id="dlg_prompt" readonly></textarea>
+  <textarea id="dlg_answer" placeholder='여기에 AI 답변을 붙여넣기 ({"items":[...]} 형태)'></textarea>
+  <div class="row"><button type="button" id="dlg_close">닫기</button><button type="button" class="primary" id="dlg_apply">적용</button></div>
+</div></div>
+
+<input type="file" id="upl" accept="image/*" hidden>
+<input type="file" id="upl_many" accept="image/*" multiple hidden>
+
+<script>
+/* ---------- 기본값 ---------- */
+const DEFAULT_BAN = '최고, 최대, 최저, 최저가, 최상, 최우수, 최초, 최강, 최다, 1위, 넘버원, No.1, 유일, 독보적, 완벽, 100%, 무조건, 절대, 당근, 당근마켓, 현금, 상품권, 기프티콘, 페이백, 캐시백';
+const $ = id => document.getElementById(id);
+const FIELDS = ['f_name','f_brand','f_url','f_intro','f_detail','f_rules','f_biz','f_biz2','f_cta','f_ban','f_style','f_color'];
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+let items = [];   // {text, headline, sub, scene, layout, seed, img(HTMLImageElement|null), uploaded}
+
+/* ---------- 폼 상태 ---------- */
+function readForm(){const o={};FIELDS.forEach(f=>o[f]=$(f).value.trim());return o}
+function fillForm(o){FIELDS.forEach(f=>{if(o[f]!=null)$(f).value=o[f]})}
+function banList(){return $('f_ban').value.split(',').map(s=>s.trim()).filter(Boolean)}
+function refreshSaved(){
+  const all=store.get('campaigns',{});const sel=$('saved');
+  sel.innerHTML='<option value="">저장된 캠페인</option>'+Object.keys(all).map(k=>`<option>${k.replace(/</g,'&lt;')}</option>`).join('');
+}
+$('saved').onchange=e=>{const all=store.get('campaigns',{});if(all[e.target.value]){fillForm(all[e.target.value]);setStatus('「'+e.target.value+'」 캠페인을 불러왔어요.')}};
+$('b_save').onclick=()=>{const f=readForm();if(!f.f_name)return setStatus('캠페인 이름을 먼저 적어주세요.',true);
+  const all=store.get('campaigns',{});all[f.f_name]=f;store.set('campaigns',all);refreshSaved();setStatus('저장했어요. 다음엔 오른쪽 위 목록에서 불러오세요.')};
+$('f_key').value=store.get('gemini_key','');
+$('f_key').onchange=()=>store.set('gemini_key',$('f_key').value.trim());
+if(!store.get('gemini_key',''))$('keybox').open=true;
+$('f_ban').value=DEFAULT_BAN;
+fillForm(store.get('draft',{}));
+if(!$('f_ban').value)$('f_ban').value=DEFAULT_BAN;
+document.addEventListener('input',()=>store.set('draft',readForm()));
+refreshSaved();
+
+function setStatus(msg,err){const s=$('status');s.hidden=!msg;s.textContent=msg||'';s.className='status'+(err?' err':'')}
+
+/* ---------- 검사 ---------- */
+const PRICE_RE=/(\d[\d,\.]*\s*(원|만\s*원|천\s*원))|(월\s*\d[\d,]*)|(₩\s*\d)/;
+function check(text){
+  const why=[];
+  if([...text].length>30)why.push(`${[...text].length}자 (30자 초과)`);
+  banList().forEach(w=>{if(w&&text.toLowerCase().includes(w.toLowerCase()))why.push(`금지어 "${w}"`)});
+  if(PRICE_RE.test(text))why.push('가격 숫자');
+  return why;
+}
+function checkItem(it){return [...check(it.text),...check(it.headline).filter(w=>!w.includes('초과')),...check(it.sub).filter(w=>!w.includes('초과'))]}
+
+/* ---------- 프롬프트 ---------- */
+function buildPrompt(f,n=10,avoid=[],bad=[]){
+  return `너는 한국 제휴마케팅(CPA, 상담신청 DB) 광고 카피라이터야. 아래 캠페인으로 당근 지역광고에 올릴 광고를 ${n}개 만들어.
+
+[캠페인] ${f.f_name}
+[소개/혜택]
+${f.f_intro}
+[상세페이지 내용]
+${f.f_detail}
+[광고주 금지사항·주의사항 — 반드시 지킬 것]
+${f.f_rules}
+
+[절대 규칙]
+1. text(홍보문구)는 공백 포함 30자 이내. 한국어 글자 수를 세기 어려우니 22~26자를 목표로 짧게.
+2. 다음 단어는 text, headline, sub 어디에도 쓰지 마: ${banList().join(', ')}
+3. 최상급·과장 표현 금지(가장, 제일, 최~ 로 시작하는 말, 1등, 보장된 최저 등). 대신 "특별", "추가", "알뜰", "든든한" 같은 표현을 써.
+4. 가격·금액 숫자(○○원, 월 ○○) 금지.
+4-1. 원문에 "최대"가 붙은 수치(예: 최대 20%, 최대 12개월 반값)는 숫자를 빼고 "추가 할인", "렌탈료 할인"처럼 써. "최대"만 지우고 숫자를 남기면 과장광고가 돼.
+4-2. 조건이 붙은 혜택은 조건을 지우지 마(예: 제휴카드 이용 시, 타사 제품 이용 시, 결합 시).
+4-3. 기간이 정해진 할인(예: 12개월 반값)은 기간을 같이 쓰거나("12개월 반값"), 아예 "렌탈료 할인"으로 써. "반값"만 단독으로 쓰지 마.
+5. 다른 브랜드 이름 금지. 현금·상품권 등 현금성 혜택 언급 금지(사은품은 가능).
+6. 소개에 없는 혜택을 지어내지 마.
+${f.f_biz?`7-1. 사업자정보(${f.f_biz})는 이미지 하단에 따로 들어가니 text·headline·sub에 넣지 마.
+`:''}7. ${n}개는 서로 다른 각도(혜택별, 상황별 공감, 지역/이웃 느낌, 상담 유도 등)로.
+${avoid.length?`8. 이미 쓴 문구와 겹치지 마: ${avoid.join(' / ')}`:''}
+${bad.length?`9. 아래 문구는 규칙 위반이라 버렸어. 같은 실수를 하지 마:
+${bad.map(b=>'- '+b.text+' → '+checkItem(b).join(', ')).join(String.fromCharCode(10))}`:''}
+
+[출력] JSON만, 설명 없이:
+{"items":[{"text":"30자 이내 홍보문구","headline":"이미지 큰 제목, 2줄이면 \\n으로 구분, 줄당 9자 이내","sub":"이미지 보조문구 22자 이내","scene":"배경 사진 영어 묘사(제품이 놓인 장면/분위기). 글자, 로고, 사람 얼굴 넣지 말 것"}]}`;
+}
+
+/* ---------- AI 호출 ---------- */
+// 어떤 AI로 글을 쓸지: 'gemini' | 'poll' | null(키 없음)
+// 무료 키로 응답이 확인된 모델 (위에서부터 시도)
+const TEXT_MODELS=['gemini-3.5-flash','gemini-3.1-flash-lite','gemini-3.5-flash-lite'];
+function engine(){return $('f_key').value.trim()?'gemini':null}
+// images: [{mime, b64}]
+async function callAI(prompt,{eng,images=[],json=true}={}){
+  eng=eng||engine(); if(!eng) throw new Error('NOKEY');
+  if(eng==='gemini'){
+    const key=$('f_key').value.trim();
+    const parts=[...images.map(im=>({inline_data:{mime_type:im.mime,data:im.b64}})),{text:prompt}];
+    let last;
+    for(const m of TEXT_MODELS){
+      const ac=new AbortController(); const timer=setTimeout(()=>ac.abort(),images.length?120000:60000);
+      let r;
+      try{ r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{
+        method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json','x-goog-api-key':key},
+        body:JSON.stringify({contents:[{parts}],generationConfig:json?{responseMimeType:'application/json',temperature:0.9}:{temperature:0.2}})}); }
+      catch(e){ last=m+' 응답 없음'; continue } finally{ clearTimeout(timer) }
+      if(r.ok){const d=await r.json();return d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||''}
+      last=`${r.status} ${(await r.text()).slice(0,200)}`;
+      if(r.status===400||r.status===401||r.status===403) break; // 키 문제는 다른 모델도 같음
+    }
+    throw new Error('Gemini 오류: '+last);
+  }
+}
+function parseItems(txt){
+  const m=txt.match(/\{[\s\S]*\}/); if(!m) throw new Error('AI 답변에서 JSON을 찾지 못했어요.');
+  const d=JSON.parse(m[0]); const arr=Array.isArray(d)?d:(d.items||d.copies||[]);
+  return arr.filter(x=>x&&x.text).map(x=>({text:String(x.text).trim(),headline:String(x.headline||x.text).replace(/\\n/g,'\n').trim(),sub:String(x.sub||'').trim(),scene:String(x.scene||'').trim()}));
+}
+// 문구 10개 생성 + 규칙 위반분 재작성 (최대 2번)
+async function generateCopies(f,eng,onStep=()=>{}){
+  let got=parseItems(await callAI(buildPrompt(f),{eng})), rewrites=0;
+  for(let round=0;round<3;round++){
+    const good=got.filter(it=>!checkItem(it).length), bad=got.filter(it=>checkItem(it).length);
+    const need=10-good.length; if(need<=0){got=good;break}
+    rewrites+=need; onStep(`규칙에 안 맞는 문구 ${need}개 다시 쓰는 중… (${round+1}/3)`);
+    const more=parseItems(await callAI(buildPrompt(f,need,good.map(g=>g.text),bad),{eng}));
+    // 새 문구가 모자라거나 또 틀리면 이전 것과 합쳐서 통과한 것부터
+    got=[...good,...more.filter(it=>!checkItem(it).length),...more.filter(it=>checkItem(it).length),...bad];
+  }
+  return {items:got.slice(0,10),rewrites};
+}
+
+/* ---------- 상세페이지 URL 읽기 ---------- */
+function blobToB64(b){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(b)})}
+async function fetchPageImage(u){
+  // 상세페이지 이미지는 대부분 브라우저에서 직접 읽기가 막혀 있어 무료 이미지 프록시(weserv)를 거침
+  const r=await fetch('https://images.weserv.nl/?url='+encodeURIComponent(u.replace(/^https?:\/\//,''))+'&w=1000&output=jpg&q=80');
+  if(!r.ok) return null; const b=await r.blob();
+  const im=await loadImage(URL.createObjectURL(b)); if(im.naturalWidth<300||im.naturalHeight<200) return null;
+  return {mime:'image/jpeg',b64:await blobToB64(b)};
+}
+let pageImages=[]; // 읽어온 상세 이미지 (배경으로도 쓸 수 있게)
+$('b_read').onclick=async()=>{
+  const url=$('f_url').value.trim(); if(!/^https?:\/\//.test(url)) return setStatus('https://로 시작하는 링크를 넣어주세요.',true);
+  const btn=$('b_read'); btn.disabled=true;
+  try{
+    setStatus('상세페이지 여는 중…');
+    const r=await fetch('https://r.jina.ai/'+url,{headers:{'X-Return-Format':'markdown'}});
+    if(!r.ok) throw new Error('페이지를 못 열었어요 ('+r.status+'). 잠시 뒤 다시 해보세요.');
+    const md=await r.text();
+    const title=(md.match(/^Title:\s*(.+)$/m)||[])[1]||'';
+    const imgs=[...new Set([...md.matchAll(/!\[[^\]]*\]\((https?:[^)\s]+)\)/g)].map(m=>m[1]))].filter(u=>!/\.svg|logo|icon|btn|favicon/i.test(u)).slice(0,12);
+    const text=md.split('Markdown Content:')[1]||md;
+    const plain=text.replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\n{3,}/g,'\n\n').trim();
+    // 사업자정보 자동 채우기 (비어 있을 때만)
+    const shop=(plain.match(/상호\s*[:：]\s*([^\n|]+)/)||[])[1]; const bn=(plain.match(/사업자\s*(?:등록)?\s*번호\s*[:：]\s*([\d-]+)/)||[])[1];
+    const bizFound=[shop&&shop.trim(),bn&&('사업자번호 '+bn)].filter(Boolean).join(' / ');
+    if(title&&!$('f_name').value.trim()) $('f_name').value=title.trim();
+    const eng=engine();
+    if(!eng){ $('f_detail').value=plain.slice(0,3000); store.set('draft',readForm()); setStatus(`글자만 가져왔어요. 이미지 ${imgs.length}장 속 글자는 AI 키가 있어야 읽을 수 있어요.`,true); return }
+    setStatus(`상세 이미지 ${imgs.length}장 받는 중…`);
+    const got=(await Promise.all(imgs.map(u=>fetchPageImage(u).catch(()=>null)))).filter(Boolean);
+    setStatus(`AI가 이미지 ${got.length}장을 읽는 중… (20~60초)`);
+    const prompt=`아래는 제휴마케팅 캠페인 상세페이지야. 페이지 글자와 첨부 이미지(순서대로)를 읽고 광고 문구 작성에 쓸 정보만 한국어로 정리해.
+- 이미지 속 글자를 빠짐없이 옮기되, 입력 폼·개인정보 안내 같은 건 빼.
+- 혜택, 조건(예: 제휴카드 조건), 기간, 제품명, 사은품을 항목별로.
+- 지어내지 말고 보이는 것만.
+[페이지 글자]
+${plain.slice(0,4000)}`;
+    const out=await callAI(prompt,{eng,images:got,json:false});
+    $('f_detail').value=out.trim(); store.set('draft',readForm());
+    setStatus(`상세페이지를 읽었어요 (이미지 ${got.length}장). 내용을 한번 확인해주세요.`+(bizFound?` 페이지에 사업자정보가 있어요: ${bizFound} — 광고주가 노출을 요구하면 사업자정보 칸에 넣으세요.`:''));
+  }catch(err){setStatus(err.message==='NOKEY'?'AI 키를 넣어주세요.':err.message,true)}
+  finally{btn.disabled=false}
+};
+
+/* ---------- 생성 흐름 ---------- */
+$('form').onsubmit=async e=>{
+  e.preventDefault();
+  const f=readForm();
+  if(!f.f_intro&&!f.f_detail) return setStatus('소개나 상세페이지 내용을 넣어주세요.',true);
+  const eng=engine(); if(!eng){openManual();return}
+  $('b_go').disabled=true;
+  try{
+    setStatus('문구 쓰는 중… (10~30초)');
+    const res=await generateCopies(f,eng,m=>setStatus(m));
+    applyItems(res.items);
+  }catch(err){
+    setStatus(err.message+' — 키를 확인하거나 「프롬프트 복사」 방식을 써보세요.',true);
+  }finally{$('b_go').disabled=false}
+};
+
+function openManual(){
+  const p=buildPrompt(readForm());$('dlg_prompt').value=p;$('dlg').classList.add('open');
+  navigator.clipboard?.writeText(p).catch(()=>{$('dlg_prompt').select()});
+}
+$('b_prompt').onclick=openManual;
+$('dlg_close').onclick=()=>$('dlg').classList.remove('open');
+$('dlg_apply').onclick=()=>{try{applyItems(parseItems($('dlg_answer').value).slice(0,10));$('dlg').classList.remove('open');$('dlg_answer').value=''}catch(err){alertIn(err.message)}};
+function alertIn(m){setStatus(m,true)}
+
+function applyItems(list){
+  items=list.map((x,i)=>({...x,layout:i%3,seed:Math.floor(Math.random()*1e6),img:null,uploaded:false}));
+  if($('f_bgmode').value==='photo'&&myPhotos.length) items.forEach((it,i)=>{it.img=myPhotos[i%myPhotos.length];it.uploaded=true});
+  renderCopies(); renderGrid();
+  const bad=items.filter(it=>checkItem(it).length).length;
+  setStatus(bad?`문구 ${items.length}개 완성. 빨간 표시 ${bad}개는 직접 고쳐주세요. 이미지 그리는 중…`:`문구 ${items.length}개 완성. 이미지 그리는 중… (장당 10~30초)`, !!bad);
+  loadAllImages();
+}
+
+/* ---------- 문구 목록 ---------- */
+function renderCopies(){
+  const ul=$('copies');ul.innerHTML='';
+  items.forEach((it,i)=>{
+    const why=check(it.text);const li=document.createElement('li');if(why.length)li.className='bad';
+    li.innerHTML=`<span class="n">${String(i+1).padStart(2,'0')}</span><span class="t"></span><span class="n">${[...it.text].length}자</span>`;
+    li.querySelector('.t').textContent=it.text;
+    if(why.length){const w=document.createElement('span');w.className='why';w.textContent=why.join(', ');li.querySelector('.t').append(document.createElement('br'),w)}
+    const b=document.createElement('button');b.textContent='복사';b.onclick=()=>copyText(it.text,b);li.append(b);ul.append(li);
+  });
+  $('b_copyall').disabled=!items.length;
+}
+$('b_copyall').onclick=e=>copyText(items.map(it=>it.text).join('\n'),e.target);
+function copyText(t,btn){navigator.clipboard.writeText(t).then(()=>{const o=btn.textContent;btn.textContent='복사됨';setTimeout(()=>btn.textContent=o,1200)}).catch(()=>setStatus('복사가 막혔어요. 직접 드래그해서 복사해주세요.',true))}
+
+/* ---------- 이미지 ---------- */
+const NEG='no text, no letters, no words, no typography, no logo, no watermark, no brand marks, no carrot, no people faces';
+function loadImage(src){return new Promise((res,rej)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=()=>rej(new Error('img'));im.src=src})}
+let imgErr='';
+async function fetchBg(it){
+  const mode=$('f_bgmode').value;
+  if(mode==='plain') return null;
+  if(mode==='photo'){imgErr=myPhotos.length?'':'「내 사진 여러 장 올리기」로 사진을 올려주세요. 지금은 기본 배경이에요.';return myPhotos.length?myPhotos[items.indexOf(it)%myPhotos.length]:null}
+  return null;
+}
+async function loadAllImages(){
+  imgErr='';let done=0;const queue=items.map((it,i)=>i);
+  async function worker(){while(queue.length){const i=queue.shift();const it=items[i];
+    if(!it.uploaded){it.loading=true;draw(i);it.img=await fetchBg(it);it.loading=false}
+    draw(i);done++;
+    if(done===items.length){const nb=items.filter(x=>checkItem(x).length).length;setStatus(imgErr||(nb?`완성! 단, 빨간 표시 ${nb}개는 규칙에 안 맞아요. 「문구 수정」으로 고쳐주세요.`:'완성! 10개 모두 규칙 통과. 마음에 안 드는 이미지는 「디자인 바꾸기」나 「사진 올리기」로 바꾸세요.'),!!(imgErr||nb))}}}
+  await Promise.all([worker(),worker()]);
+  $('b_dlall').disabled=false;
+}
+
+function renderGrid(){
+  const g=$('grid');g.innerHTML='';
+  items.forEach((it,i)=>{
+    const c=document.createElement('div');c.className='card';c.id='card'+i;
+    c.innerHTML=`<canvas width="1080" height="1080"></canvas>
+    <div class="body">
+      <div class="copy"></div>
+      <div class="meta"></div>
+      <div class="edit">
+        <label>큰 제목 (줄바꿈 가능)<textarea rows="2" data-k="headline"></textarea></label>
+        <label>보조문구<input data-k="sub"></label>
+        <label>배치<select data-k="layout"><option value="0">위 제목</option><option value="1">아래 카드</option><option value="2">가운데</option></select></label>
+      </div>
+      <div class="actions">
+        <button data-a="edit">문구 수정</button><button data-a="bg">디자인 바꾸기</button>
+        <button data-a="up">사진 올리기</button><button data-a="dl">저장</button>
+      </div>
+    </div>`;
+    g.append(c);
+    c.querySelector('.copy').textContent=it.text;
+    c.querySelectorAll('[data-k]').forEach(el=>{el.value=it[el.dataset.k];el.oninput=()=>{it[el.dataset.k]=el.dataset.k==='layout'?+el.value:el.value;draw(i)}});
+    c.querySelector('[data-a=edit]').onclick=()=>c.classList.toggle('editing');
+    c.querySelector('[data-a=bg]').onclick=()=>{it.seed=Math.floor(Math.random()*1e6);if(!it.uploaded)it.img=null;it.layout=(+it.layout+1)%3;const sel=c.querySelector('[data-k=layout]');if(sel)sel.value=it.layout;draw(i)};
+    c.querySelector('[data-a=up]').onclick=()=>{upTarget=i;$('upl').click()};
+    c.querySelector('[data-a=dl]').onclick=()=>download(i);
+    draw(i);
+  });
+}
+let upTarget=-1, myPhotos=[];
+$('b_photos').onclick=()=>$('upl_many').click();
+$('upl_many').onchange=async e=>{
+  const fs=[...e.target.files]; if(!fs.length) return;
+  myPhotos=await Promise.all(fs.map(f=>loadImage(URL.createObjectURL(f))));
+  $('f_bgmode').value='photo'; e.target.value='';
+  if(!items.length) return setStatus(`사진 ${myPhotos.length}장을 준비했어요. 문구를 만들면 이미지에 들어가요.`);
+  items.forEach((it,i)=>{it.img=myPhotos[i%myPhotos.length];it.uploaded=true;draw(i)});
+  $('b_dlall').disabled=false; setStatus(`사진 ${myPhotos.length}장을 10장에 돌아가며 넣었어요.`);
+};
+$('upl').onchange=async e=>{const f=e.target.files[0];if(!f||upTarget<0)return;const it=items[upTarget];
+  it.img=await loadImage(URL.createObjectURL(f));it.uploaded=true;draw(upTarget);e.target.value=''};
+
+/* 캔버스에 광고 그리기 */
+function hexToRgb(h){const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function wrapLines(ctx,text,max){
+  const out=[];text.split('\n').forEach(par=>{let line='';for(const ch of par){if(ctx.measureText(line+ch).width>max&&line){out.push(line);line=ch}else line+=ch}out.push(line)});return out.filter(l=>l.trim()!=='')
+}
+function fitFont(ctx,text,family,weight,start,min,maxW,maxLines){
+  for(let s=start;s>=min;s-=4){ctx.font=`${weight} ${s}px ${family}`;const ls=wrapLines(ctx,text,maxW);if(ls.length<=maxLines)return{s,ls}}
+  ctx.font=`${weight} ${min}px ${family}`;return{s:min,ls:wrapLines(ctx,text,maxW).slice(0,maxLines)}
+}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+// 구글 한글 폰트는 글자 묶음별로 나눠 받아서, 캔버스에 쓸 글자를 미리 받아둬야 중간에 다른 폰트로 안 바뀜
+const fontCache=new Set();
+async function ensureFonts(text){
+  const key=[...new Set(text)].join('');
+  const specs=['400 100px "Black Han Sans"','500 100px "Noto Sans KR"','700 100px "Noto Sans KR"','900 100px "Noto Sans KR"'];
+  const todo=specs.filter(s=>!fontCache.has(s+'\u0001'+key));
+  if(!todo.length) return;
+  await Promise.all(todo.map(s=>document.fonts.load(s,key).then(()=>fontCache.add(s+'\u0001'+key)).catch(()=>{})));
+}
+async function draw(i){
+  await document.fonts.ready;
+  const it0=items[i];if(!it0)return;const f0=readForm();
+  await ensureFonts([it0.headline,it0.sub,it0.text,f0.f_brand,f0.f_name,f0.f_biz,f0.f_biz2,f0.f_cta||'무료상담 신청',' ›','배경 이미지 만드는 중…'].join(''));
+  const it=items[i];const cv=document.querySelector('#card'+i+' canvas');if(!cv)return;const ctx=cv.getContext('2d');
+  const W=1080,H=1080,FOOT=150,color=$('f_color').value,[r,g,b]=hexToRgb(color);
+  const f=readForm();
+  // 배경
+  if(it.img){const im=it.img;const s=Math.max(W/im.width,H/im.height);ctx.drawImage(im,(W-im.width*s)/2,(H-im.height*s)/2,im.width*s,im.height*s)}
+  else{const gr=ctx.createLinearGradient(0,0,W,H);gr.addColorStop(0,`rgba(${r},${g},${b},.15)`);gr.addColorStop(1,`rgba(${r},${g},${b},.45)`);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+    // 기본 배경 장식: 시드 기반 원형 물방울
+    let sd=it.seed;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;
+    for(let k=0;k<7;k++){ctx.beginPath();ctx.arc(rnd()*W,H*.35+rnd()*H*.55,60+rnd()*220,0,Math.PI*2);ctx.fillStyle=`rgba(${r},${g},${b},${.06+rnd()*.12})`;ctx.fill()}
+    ctx.beginPath();ctx.arc(W/2,H*.78,250,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.55)';ctx.fill()}
+  const L=+it.layout;const dark=L===2;
+  // 글자 가독성용 오버레이
+  if(L===0){const gr=ctx.createLinearGradient(0,0,0,H*.62);gr.addColorStop(0,'rgba(255,255,255,.94)');gr.addColorStop(.7,'rgba(255,255,255,.75)');gr.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H*.62)}
+  if(L===2){ctx.fillStyle='rgba(10,18,30,.5)';ctx.fillRect(0,0,W,H)}
+  const ink=dark?'#ffffff':'#13213a';
+  // 상단 브랜드 + 배지
+  let y=L===1?560:90;
+  if(L!==1){
+    ctx.font='900 34px "Noto Sans KR"';ctx.textBaseline='middle';
+    const brand=f.f_brand;const tag=f.f_name?f.f_name.slice(0,12):'';
+    ctx.font='700 30px "Noto Sans KR"';const tw=tag?ctx.measureText(tag).width+52:0;
+    ctx.font='900 36px "Noto Sans KR"';const bw=brand?ctx.measureText(brand).width+18:0;
+    let x=(W-bw-tw)/2;
+    if(brand){ctx.fillStyle=dark?'#fff':color;ctx.textAlign='left';ctx.fillText(brand,x,y);x+=bw}
+    if(tag){rr(ctx,x,y-28,tw,56,28);ctx.fillStyle=color;ctx.fill();ctx.fillStyle='#fff';ctx.font='700 30px "Noto Sans KR"';ctx.fillText(tag,x+26,y+1)}
+    y+=60;
+  }
+  // 아래 카드 레이아웃: 흰 카드
+  if(L===1){rr(ctx,60,500,W-120,H-FOOT-560,36);ctx.fillStyle='rgba(255,255,255,.95)';ctx.shadowColor='rgba(0,0,0,.18)';ctx.shadowBlur=30;ctx.fill();ctx.shadowBlur=0}
+  // 제목
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  const maxW=L===1?W-200:W-140;
+  const {s,ls}=fitFont(ctx,it.headline,'"Black Han Sans"','400',L===1?104:124,60,maxW,L===1?2:3);
+  if(L===2) y=(H-FOOT)/2-(ls.length*s*1.1)/2-20;
+  if(L===1) y=540;
+  ls.forEach((ln,k)=>{const yy=y+s*(k+1)*1.08;
+    if(dark){ctx.shadowColor='rgba(0,0,0,.45)';ctx.shadowBlur=18}
+    ctx.fillStyle=k===ls.length-1&&ls.length>1?(dark?'#ffd34d':color):ink;ctx.fillText(ln,W/2,yy);ctx.shadowBlur=0});
+  y+=s*ls.length*1.08+24;
+  // 보조문구
+  if(it.sub){const fs=fitFont(ctx,it.sub,'"Noto Sans KR"','700',46,30,maxW,2);ctx.fillStyle=dark?'rgba(255,255,255,.92)':'#2a3a55';
+    fs.ls.forEach((ln,k)=>{if(dark){ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=12}ctx.fillText(ln,W/2,y+fs.s*(k+1)*1.25);ctx.shadowBlur=0})}
+  // 하단 사업자 바 (AI 워터마크도 가림)
+  ctx.fillStyle='#fff';ctx.fillRect(0,H-FOOT,W,FOOT);ctx.fillStyle='rgba(0,0,0,.06)';ctx.fillRect(0,H-FOOT,W,3);
+  ctx.textAlign='left';ctx.fillStyle='#222';
+  const hasBiz=!!(f.f_biz||f.f_biz2);
+  if(f.f_biz){const bizFit=fitFont(ctx,f.f_biz,'"Noto Sans KR"','700',34,22,560,1);ctx.fillText(bizFit.ls[0]||'',60,H-FOOT+(f.f_biz2?68:86))}
+  if(f.f_biz2){ctx.font=f.f_biz?'500 22px "Noto Sans KR"':'700 28px "Noto Sans KR"';ctx.fillStyle=f.f_biz?'#888':'#222';ctx.fillText(f.f_biz2,60,H-FOOT+(f.f_biz?106:86))}
+  const cta=(f.f_cta||'무료상담 신청')+' ›';ctx.font='900 34px "Noto Sans KR"';const cw=ctx.measureText(cta).width+70;
+  const cx=hasBiz?W-60-cw:(W-cw)/2;rr(ctx,cx,H-FOOT+32,cw,86,20);ctx.fillStyle=color;ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(cta,cx+cw/2,H-FOOT+76);ctx.textBaseline='alphabetic';
+  if(it.loading){ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillRect(0,0,W,H-FOOT);ctx.fillStyle='#333';ctx.font='700 40px "Noto Sans KR"';ctx.textAlign='center';ctx.fillText('배경 이미지 만드는 중…',W/2,(H-FOOT)/2)}
+  // 카드 정보
+  const why=checkItem(it);const meta=document.querySelector('#card'+i+' .meta');
+  meta.innerHTML='';const p=document.createElement('span');p.className='pill'+(why.length?' bad':'');p.textContent=why.length?why.join(', '):'규칙 통과';meta.append(p);
+  if(!it.img&&!it.loading){const q=document.createElement('span');q.textContent='기본 디자인 배경';meta.append(q)}
+}
+function fname(i){return `${(readForm().f_name||'ad').replace(/[\\/:*?"<>|\s]+/g,'_')}_${String(i+1).padStart(2,'0')}.png`}
+function download(i){const cv=document.querySelector('#card'+i+' canvas');
+  try{cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname(i);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},'image/png')}
+  catch(e){setStatus('이 이미지는 저장이 막혔어요. 「배경 다시」 후 다시 시도해주세요.',true)}}
+$('b_dlall').onclick=async()=>{for(let i=0;i<items.length;i++){download(i);await new Promise(r=>setTimeout(r,400))}};
+$('f_color').oninput=()=>items.forEach((_,i)=>draw(i));
+</script>
+</body>
+</html>
