@@ -72,7 +72,7 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 </head>
 <body>
 <header>
-  <h1>제휴광고 공장</h1>
+  <h1>제휴광고 공장 <small style="font-size:12px;font-weight:400;color:#999">v1111</small></h1>
   <p>캠페인 정보 입력 → 30자 홍보문구 10개 + 광고 이미지 10장</p>
 </header>
 
@@ -242,6 +242,23 @@ ${bad.map(b=>'- '+b.text+' → '+checkItem(b).join(', ')).join(String.fromCharCo
 // 무료 키로 응답이 확인된 모델 (위에서부터 시도)
 const TEXT_MODELS=['gemini-3.5-flash','gemini-3.1-flash-lite','gemini-3.5-flash-lite'];
 function engine(){return $('f_key').value.trim()?'gemini':null}
+// 구글이 모델을 자주 바꾸므로, 키로 지금 쓸 수 있는 모델 목록을 받아 순서를 정함
+let modelList=null;
+async function getModels(key){
+  if(modelList) return modelList;
+  let avail=[];
+  try{
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000',{headers:{'x-goog-api-key':key}});
+    if(r.ok){const d=await r.json();avail=(d.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace(/^models\//,''))}
+  }catch(e){}
+  if(!avail.length) return TEXT_MODELS;
+  const ok=n=>/flash/.test(n)&&!/image|tts|audio|live|embed|thinking|exp/.test(n);
+  const ver=n=>parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/)||[])[1]||0);
+  const extra=avail.filter(n=>ok(n)&&!TEXT_MODELS.includes(n)&&!/latest/.test(n)).sort((a,b)=>(/lite/.test(a)-/lite/.test(b))||(ver(b)-ver(a)));
+  modelList=[...TEXT_MODELS.filter(n=>avail.includes(n)),...extra].slice(0,5);
+  if(!modelList.length) modelList=TEXT_MODELS;
+  return modelList;
+}
 // images: [{mime, b64}]
 async function callAI(prompt,{eng,images=[],json=true}={}){
   eng=eng||engine(); if(!eng) throw new Error('NOKEY');
@@ -249,7 +266,7 @@ async function callAI(prompt,{eng,images=[],json=true}={}){
     const key=$('f_key').value.trim();
     const parts=[...images.map(im=>({inline_data:{mime_type:im.mime,data:im.b64}})),{text:prompt}];
     let last;
-    for(const m of TEXT_MODELS){
+    for(const m of await getModels(key)){
       const ac=new AbortController(); const timer=setTimeout(()=>ac.abort(),images.length?120000:60000);
       let r;
       try{ r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{
@@ -258,7 +275,7 @@ async function callAI(prompt,{eng,images=[],json=true}={}){
       catch(e){ last=m+' 응답 없음'; continue } finally{ clearTimeout(timer) }
       if(r.ok){const d=await r.json();return d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||''}
       last=`${r.status} ${(await r.text()).slice(0,200)}`;
-      if(r.status===400||r.status===401||r.status===403) break; // 키 문제는 다른 모델도 같음
+      if(r.status===401||r.status===403||(r.status===400&&/API_KEY|api key/i.test(last))) break; // 키 문제는 다른 모델도 같음
     }
     throw new Error('Gemini 오류: '+last);
   }
