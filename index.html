@@ -40,39 +40,61 @@ details{border:1px dashed var(--line);border-radius:10px;padding:10px 12px}
 details summary{cursor:pointer;font-weight:700;font-size:13px}
 details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .hint{font-size:12px;color:var(--muted);margin:0}
+/* 접는 입력 구역 */
+details.sec{border:1px solid var(--line);border-style:solid;border-radius:11px;padding:0;background:var(--panel)}
+details.sec>summary{list-style:none;display:flex;align-items:center;gap:8px;padding:11px 12px;font-size:14px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:'';width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0 4px}
+details.sec[open]>summary::after{transform:rotate(225deg);margin-top:4px}
+details.sec>div{margin:0;padding:0 12px 12px}
+.badge{margin-left:auto;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--muted);white-space:nowrap}
+.badge.on{background:var(--ok-bg);color:var(--accent)}
+.badge.need{background:var(--warn-bg);color:var(--warn)}
+.linkbtn{border:0;background:none;padding:2px 4px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:underline}
+@media (min-width:901px){.panel{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
+/* 더보기 */
+.more{display:block;width:100%;margin-top:8px;background:none;border-style:dashed;color:var(--muted);font-weight:500;font-size:13px}
+.copies:not(.expanded) li.extra{display:none}
+.grid .card.extra{display:none}
+.grid.expanded .card.extra{display:flex}
 .status{font-size:13px;padding:10px 12px;border-radius:9px;background:var(--ok-bg)}
 .status.err{background:var(--warn-bg);color:var(--warn)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+@media (max-width:600px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
-.card canvas{width:100%;aspect-ratio:1;display:block;background:var(--line)}
-.card .body{padding:12px;display:flex;flex-direction:column;gap:8px}
-.card .copy{font-weight:700;font-size:15px}
+.card canvas{width:100%;aspect-ratio:1;display:block;background:var(--line);cursor:zoom-in}
+.card .body{padding:8px;display:flex;flex-direction:column;gap:6px}
+.card .copy{font-weight:700;font-size:13px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card .meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
 .pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--ok-bg)}
 .pill.bad{background:var(--warn-bg);color:var(--warn)}
-.card .actions{display:flex;gap:6px;flex-wrap:wrap}
-.card .actions button{flex:1;padding:7px 8px;font-size:12px}
+.card .actions{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.card .actions button{padding:5px 4px;font-size:11px;border-radius:7px}
 .card .edit{display:none;flex-direction:column;gap:6px}
 .card.editing .edit{display:flex}
 .empty{border:2px dashed var(--line);border-radius:14px;padding:40px 20px;text-align:center;color:var(--muted)}
 .copies{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
-.copies li{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.copies li{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 6px 6px 12px;font-size:14px}
+.copies li button{padding:5px 10px;font-size:12px}
 .copies li span.t{flex:1;min-width:0}
 .copies li .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
 .copies li.bad{border-color:var(--warn)}
 .copies li.bad .why{color:var(--warn);font-size:12px}
 .section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
 .section-title h2{font:22px var(--f-display);margin:0}
+.section-title button{white-space:nowrap;font-size:13px;padding:7px 10px}
 .dialog{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 .dialog.open{display:flex}
 .dialog>div{background:var(--panel);border-radius:14px;padding:18px;width:min(760px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
 .dialog textarea{min-height:200px;font-size:12px}
+#viewer>div{width:min(640px,100%);align-items:center}
+#viewer img{width:100%;border-radius:10px;display:block}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <header>
-  <h1>홍보콘텐츠비서 <small style="font-size:12px;font-weight:400;color:#999">v1113b</small></h1>
+  <h1>홍보콘텐츠비서 <small style="font-size:12px;font-weight:400;color:#999">v1113c</small></h1>
   <p>캠페인 정보 입력 → 30자 홍보문구 10개 + 광고 이미지 10장</p>
 </header>
 
@@ -80,20 +102,46 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
   <!-- 입력 패널 -->
   <form class="panel" id="form" autocomplete="off">
     <h2>캠페인 정보
-      <select id="saved" style="width:auto;font-size:12px"><option value="">저장된 캠페인</option></select>
+      <span class="row" style="flex:none;gap:4px"><button type="button" class="linkbtn" id="b_fold">모두 펼치기</button>
+      <select id="saved" style="width:auto;font-size:12px"><option value="">저장된 캠페인</option></select></span>
     </h2>
-    <label>캠페인 이름<input id="f_name" placeholder="예: 코웨이 특판몰"></label>
-    <label>브랜드명 <small>이미지 상단에 표시 (비우면 생략)</small><input id="f_brand" placeholder="예: coway"></label>
-    <label>간단한 소개 / 혜택<textarea id="f_intro" rows="5" placeholder="머천트 소개, 혜택 목록을 그대로 붙여넣기"></textarea></label>
-    <label>캠페인 링크 (상세페이지 URL)
-      <div class="row"><input id="f_url" placeholder="https://www.albarich.com/pt/..." style="flex:3"><button type="button" id="b_read" style="flex:1">읽기</button></div></label>
-    <label>상세페이지 내용 <small>「읽기」를 누르면 AI가 이미지 속 글자까지 읽어서 채워요 · 직접 고쳐도 돼요</small><textarea id="f_detail" rows="6" placeholder="링크를 넣고 「읽기」를 누르거나, 직접 붙여넣기"></textarea></label>
-    <label>금지사항 · 광고 주의사항<textarea id="f_rules" rows="5" placeholder="알바리치 금지사항을 그대로 붙여넣기"></textarea></label>
-    <label>사업자정보 <small>선택 · 넣으면 이미지 하단에 표시 (광고주가 노출을 요구할 때)</small><input id="f_biz" placeholder="예: 코웨이 햇살 대리점"></label>
-    <label>사업자 부가정보 <small>선택</small><input id="f_biz2" placeholder="예: 사업자번호 679-32-01257"></label>
-    <label>버튼 문구<input id="f_cta" value="무료상담 신청"></label>
-    <details>
-      <summary>금지어 · 스타일 설정</summary>
+    <details class="sec" open>
+      <summary>① 기본 정보 <span class="badge" data-b="basic"></span></summary>
+      <div>
+      <label>캠페인 이름<input id="f_name" placeholder="예: 코웨이 특판몰"></label>
+      <label>브랜드명 <small>이미지 상단에 표시 (비우면 생략)</small><input id="f_brand" placeholder="예: coway"></label>
+      <label>간단한 소개 / 혜택<textarea id="f_intro" rows="5" placeholder="머천트 소개, 혜택 목록을 그대로 붙여넣기"></textarea></label>
+      </div>
+    </details>
+    <details class="sec">
+      <summary>② 상세페이지 <span class="badge" data-b="detail"></span></summary>
+      <div>
+      <label>캠페인 링크 (상세페이지 URL)
+        <div class="row"><input id="f_url" placeholder="https://www.albarich.com/pt/..." style="flex:3"><button type="button" id="b_read" style="flex:1">읽기</button></div></label>
+      <label>상세페이지 내용 <small>「읽기」를 누르면 AI가 이미지 속 글자까지 읽어서 채워요 · 직접 고쳐도 돼요</small><textarea id="f_detail" rows="6" placeholder="링크를 넣고 「읽기」를 누르거나, 직접 붙여넣기"></textarea></label>
+      </div>
+    </details>
+    <details class="sec">
+      <summary>③ 금지사항 · 주의사항 <span class="badge" data-b="rules"></span></summary>
+      <div>
+      <label>금지사항 · 광고 주의사항<textarea id="f_rules" rows="5" placeholder="알바리치 금지사항을 그대로 붙여넣기"></textarea></label>
+      </div>
+    </details>
+    <details class="sec">
+      <summary>④ 이미지 하단 · 배경 <span class="badge" data-b="foot"></span></summary>
+      <div>
+      <label>사업자정보 <small>선택 · 넣으면 이미지 하단에 표시 (광고주가 노출을 요구할 때)</small><input id="f_biz" placeholder="예: 코웨이 햇살 대리점"></label>
+      <label>사업자 부가정보 <small>선택</small><input id="f_biz2" placeholder="예: 사업자번호 679-32-01257"></label>
+      <label>버튼 문구<input id="f_cta" value="무료상담 신청"></label>
+      <label>이미지 배경
+        <select id="f_bgmode">
+          <option value="photo">내 사진 (아래 결과에서 올리기)</option>
+                  <option value="plain">기본 디자인 배경</option>
+        </select></label>
+      </div>
+    </details>
+    <details class="sec">
+      <summary>⑤ 금지어 · 이미지 스타일 <span class="badge" data-b="ban"></span></summary>
       <div>
         <label>항상 금지할 단어 <small>쉼표로 구분 · 문구에 들어가면 자동 재작성</small>
           <textarea id="f_ban" rows="3"></textarea></label>
@@ -102,8 +150,8 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
         <label>메인 색상<input id="f_color" type="color" value="#1f5fd6" style="height:42px;padding:4px"></label>
       </div>
     </details>
-    <details id="keybox">
-      <summary>AI 연결 (무료)</summary>
+    <details class="sec" id="keybox">
+      <summary>⑥ AI 연결 (무료) <span class="badge" data-b="key"></span></summary>
       <div>
         <label>Google Gemini API 키 <small>무료 · 이 브라우저에만 저장</small>
           <input id="f_key" type="password" placeholder="AI Studio에서 받은 키"></label>
@@ -114,11 +162,6 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
         · 한글 문구·사업자정보는 AI가 아니라 이 페이지가 직접 그려서 글자가 깨지지 않아요.</p>
       </div>
     </details>
-    <label>이미지 배경
-      <select id="f_bgmode">
-        <option value="photo">내 사진 (아래 결과에서 올리기)</option>
-                <option value="plain">기본 디자인 배경</option>
-      </select></label>
     <div class="row">
       <button type="button" id="b_save">캠페인 저장</button>
       <button type="button" id="b_prompt">프롬프트 복사</button>
@@ -137,6 +180,7 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
       </div>
     </div>
     <ul class="copies" id="copies"><li class="empty" style="display:block">캠페인 정보를 넣고 「만들기」를 누르면 여기에 문구 10개가 나옵니다.</li></ul>
+    <button type="button" class="more" id="more_copies" hidden></button>
 
     <div class="section-title" style="margin-top:28px">
       <h2>광고 이미지</h2>
@@ -145,8 +189,9 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
         <button type="button" id="b_dlall" disabled>이미지 전체 저장</button>
       </div>
     </div>
-    <p class="hint" id="photohint" style="margin:0 0 10px">사진을 여러 장 고르면 10장에 순서대로 돌아가며 들어가요. 사진마다 「사진 올리기」로 따로 바꿀 수도 있어요.</p>
+    <p class="hint" id="photohint" style="margin:0 0 10px">사진을 여러 장 고르면 10장에 순서대로 돌아가며 들어가요. 사진마다 「사진 변경」로 따로 바꿀 수도 있어요.</p>
     <div class="grid" id="grid"></div>
+    <button type="button" class="more" id="more_grid" hidden></button>
   </main>
 </div>
 
@@ -157,6 +202,11 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
   <textarea id="dlg_answer" placeholder='여기에 AI 답변을 붙여넣기 ({"items":[...]} 형태)'></textarea>
   <p id="dlg_msg" style="color:#c0392b;font-size:13px;margin:6px 0 0;min-height:0"></p>
   <div class="row"><button type="button" id="dlg_close">닫기</button><button type="button" id="dlg_copy">프롬프트 다시 복사</button><button type="button" class="primary" id="dlg_apply">적용</button></div>
+</div></div>
+
+<div class="dialog" id="viewer"><div>
+  <img id="viewer_img" alt="광고 이미지 크게 보기">
+  <div class="row" style="width:100%"><button type="button" id="viewer_close">닫기</button><button type="button" class="primary" id="viewer_dl">저장</button></div>
 </div></div>
 
 <input type="file" id="upl" accept="image/*" hidden>
@@ -181,7 +231,7 @@ function refreshSaved(){
   const all=store.get('campaigns',{});const sel=$('saved');
   sel.innerHTML='<option value="">저장된 캠페인</option>'+Object.keys(all).map(k=>`<option>${k.replace(/</g,'&lt;')}</option>`).join('');
 }
-$('saved').onchange=e=>{const all=store.get('campaigns',{});if(all[e.target.value]){fillForm(all[e.target.value]);setStatus('「'+e.target.value+'」 캠페인을 불러왔어요.')}};
+$('saved').onchange=e=>{const all=store.get('campaigns',{});if(all[e.target.value]){fillForm(all[e.target.value]);updateBadges();setStatus('「'+e.target.value+'」 캠페인을 불러왔어요.')}};
 $('b_save').onclick=()=>{const f=readForm();if(!f.f_name)return setStatus('캠페인 이름을 먼저 적어주세요.',true);
   const all=store.get('campaigns',{});all[f.f_name]=f;store.set('campaigns',all);refreshSaved();setStatus('저장했어요. 다음엔 오른쪽 위 목록에서 불러오세요.')};
 $('f_key').value=store.get('gemini_key','');
@@ -192,6 +242,24 @@ fillForm(store.get('draft',{}));
 if(!$('f_ban').value)$('f_ban').value=DEFAULT_BAN;
 document.addEventListener('input',()=>store.set('draft',readForm()));
 refreshSaved();
+setTimeout(()=>{updateBadges();syncFold()},0);
+
+/* ---------- 접는 구역 상태 표시 ---------- */
+function updateBadges(){
+  const v=id=>$(id).value.trim(), n=id=>[...v(id)].length;
+  const set=(k,txt,cls)=>{const b=document.querySelector(`[data-b="${k}"]`);if(b){b.textContent=txt;b.className='badge'+(cls?' '+cls:'')}};
+  set('basic',v('f_name')?(v('f_name').length>14?v('f_name').slice(0,14)+'…':v('f_name')):'이름 없음',v('f_name')?'on':'need');
+  set('detail',v('f_detail')?n('f_detail').toLocaleString()+'자':(v('f_url')?'「읽기」 전':'비어 있음'),v('f_detail')?'on':'');
+  set('rules',v('f_rules')?v('f_rules').split('\n').filter(Boolean).length+'줄':'비어 있음',v('f_rules')?'on':'');
+  set('foot',[v('f_biz')&&'사업자정보',$('f_bgmode').value==='photo'?'내 사진':'기본 배경'].filter(Boolean).join(' · '),'on');
+  set('ban',banList().length+'개 단어','on');
+  set('key',v('f_key')?'연결됨':'키 없음',v('f_key')?'on':'need');
+}
+document.addEventListener('input',updateBadges);document.addEventListener('change',updateBadges);
+const secs=()=>[...document.querySelectorAll('details.sec')];
+function syncFold(){$('b_fold').textContent=secs().every(d=>d.open)?'모두 접기':'모두 펼치기'}
+secs().forEach(d=>d.addEventListener('toggle',syncFold));
+$('b_fold').onclick=()=>{const open=!secs().every(d=>d.open);secs().forEach(d=>d.open=open);syncFold()};
 
 function setStatus(msg,err){const s=$('status');s.hidden=!msg;s.textContent=msg||'';s.className='status'+(err?' err':'')}
 
@@ -385,6 +453,8 @@ function applyItems(list){
   items=list.map((x,i)=>({...x,layout:i%3,seed:Math.floor(Math.random()*1e6),img:null,uploaded:false}));
   if($('f_bgmode').value==='photo'&&myPhotos.length) items.forEach((it,i)=>{it.img=myPhotos[i%myPhotos.length];it.uploaded=true});
   renderCopies(); renderGrid();
+  // 휴대폰: 입력 구역을 접고 결과로 이동
+  if(innerWidth<=900){secs().forEach(d=>d.open=false);syncFold();document.querySelector('main').scrollIntoView({behavior:'smooth'})}
   const bad=items.filter(it=>checkItem(it).length).length;
   setStatus(bad?`문구 ${items.length}개 완성. 빨간 표시 ${bad}개는 직접 고쳐주세요. 이미지 그리는 중…`:`문구 ${items.length}개 완성. 이미지 그리는 중… (장당 10~30초)`, !!bad);
   loadAllImages();
@@ -401,7 +471,18 @@ function renderCopies(){
     const b=document.createElement('button');b.textContent='복사';b.onclick=()=>copyText(it.text,b);li.append(b);ul.append(li);
   });
   $('b_copyall').disabled=!items.length;
+  setMore('copies','more_copies',5);
 }
+/* 더보기: 처음엔 일부만 보여주기 */
+function setMore(listId,btnId,limit){
+  const list=$(listId),btn=$(btnId),kids=[...list.children].filter(el=>!el.classList.contains('empty'));
+  kids.forEach((el,i)=>el.classList.toggle('extra',i>=limit));
+  const hidden=Math.max(0,kids.length-limit);btn.hidden=!hidden;
+  const label=()=>{btn.textContent=list.classList.contains('expanded')?'접기 ▲':`더보기 (${hidden}개 더) ▼`};label();
+  btn.onclick=()=>{list.classList.toggle('expanded');label()};
+}
+function gridLimit(){const cols=getComputedStyle($('grid')).gridTemplateColumns.split(' ').length||2;return Math.min(10,Math.max(4,cols*2))}
+addEventListener('resize',()=>{if(items.length)setMore('grid','more_grid',gridLimit())});
 $('b_copyall').onclick=e=>copyText(items.map(it=>it.text).join('\n'),e.target);
 function copyText(t,btn){navigator.clipboard.writeText(t).then(()=>{const o=btn.textContent;btn.textContent='복사됨';setTimeout(()=>btn.textContent=o,1200)}).catch(()=>setStatus('복사가 막혔어요. 직접 드래그해서 복사해주세요.',true))}
 
@@ -420,7 +501,7 @@ async function loadAllImages(){
   async function worker(){while(queue.length){const i=queue.shift();const it=items[i];
     if(!it.uploaded){it.loading=true;draw(i);it.img=await fetchBg(it);it.loading=false}
     draw(i);done++;
-    if(done===items.length){const nb=items.filter(x=>checkItem(x).length).length;setStatus(imgErr||(nb?`완성! 단, 빨간 표시 ${nb}개는 규칙에 안 맞아요. 「문구 수정」으로 고쳐주세요.`:'완성! 10개 모두 규칙 통과. 마음에 안 드는 이미지는 「디자인 바꾸기」나 「사진 올리기」로 바꾸세요.'),!!(imgErr||nb))}}}
+    if(done===items.length){const nb=items.filter(x=>checkItem(x).length).length;setStatus(imgErr||(nb?`완성! 단, 빨간 표시 ${nb}개는 규칙에 안 맞아요. 「문구 수정」으로 고쳐주세요.`:'완성! 10개 모두 규칙 통과. 마음에 안 드는 이미지는 「디자인 변경」나 「사진 변경」로 바꾸세요.'),!!(imgErr||nb))}}}
   await Promise.all([worker(),worker()]);
   $('b_dlall').disabled=false;
 }
@@ -439,8 +520,8 @@ function renderGrid(){
         <label>배치<select data-k="layout"><option value="0">위 제목</option><option value="1">아래 카드</option><option value="2">가운데</option></select></label>
       </div>
       <div class="actions">
-        <button data-a="edit">문구 수정</button><button data-a="bg">디자인 바꾸기</button>
-        <button data-a="up">사진 올리기</button><button data-a="dl">저장</button>
+        <button data-a="edit">문구 수정</button><button data-a="bg">디자인 변경</button>
+        <button data-a="up">사진 변경</button><button data-a="dl">저장</button>
       </div>
     </div>`;
     g.append(c);
@@ -450,9 +531,13 @@ function renderGrid(){
     c.querySelector('[data-a=bg]').onclick=()=>{it.seed=Math.floor(Math.random()*1e6);if(!it.uploaded)it.img=null;it.layout=(+it.layout+1)%3;const sel=c.querySelector('[data-k=layout]');if(sel)sel.value=it.layout;draw(i)};
     c.querySelector('[data-a=up]').onclick=()=>{upTarget=i;$('upl').click()};
     c.querySelector('[data-a=dl]').onclick=()=>download(i);
+    c.querySelector('canvas').onclick=()=>{$('viewer_img').src=c.querySelector('canvas').toDataURL('image/png');$('viewer_dl').onclick=()=>download(i);$('viewer').classList.add('open')};
     draw(i);
   });
+  setMore('grid','more_grid',gridLimit());
 }
+$('viewer_close').onclick=()=>$('viewer').classList.remove('open');
+$('viewer').onclick=e=>{if(e.target.id==='viewer')$('viewer').classList.remove('open')};
 let upTarget=-1, myPhotos=[];
 $('b_photos').onclick=()=>$('upl_many').click();
 $('upl_many').onchange=async e=>{
