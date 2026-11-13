@@ -72,7 +72,7 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 </head>
 <body>
 <header>
-  <h1>홍보콘텐츠비서 <small style="font-size:12px;font-weight:400;color:#999">v1113</small></h1>
+  <h1>홍보콘텐츠비서 <small style="font-size:12px;font-weight:400;color:#999">v1113b</small></h1>
   <p>캠페인 정보 입력 → 30자 홍보문구 10개 + 광고 이미지 10장</p>
 </header>
 
@@ -155,7 +155,8 @@ details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
   <p class="hint">1) 아래 프롬프트가 복사됐어요. Claude나 ChatGPT에 붙여넣으세요.<br>2) 답변(JSON)을 아래 칸에 붙여넣고 「적용」을 누르세요.</p>
   <textarea id="dlg_prompt" readonly></textarea>
   <textarea id="dlg_answer" placeholder='여기에 AI 답변을 붙여넣기 ({"items":[...]} 형태)'></textarea>
-  <div class="row"><button type="button" id="dlg_close">닫기</button><button type="button" class="primary" id="dlg_apply">적용</button></div>
+  <p id="dlg_msg" style="color:#c0392b;font-size:13px;margin:6px 0 0;min-height:0"></p>
+  <div class="row"><button type="button" id="dlg_close">닫기</button><button type="button" id="dlg_copy">프롬프트 다시 복사</button><button type="button" class="primary" id="dlg_apply">적용</button></div>
 </div></div>
 
 <input type="file" id="upl" accept="image/*" hidden>
@@ -281,9 +282,20 @@ async function callAI(prompt,{eng,images=[],json=true}={}){
   }
 }
 function parseItems(txt){
-  const m=txt.match(/\{[\s\S]*\}/); if(!m) throw new Error('AI 답변에서 JSON을 찾지 못했어요.');
-  const d=JSON.parse(m[0]); const arr=Array.isArray(d)?d:(d.items||d.copies||[]);
-  return arr.filter(x=>x&&x.text).map(x=>({text:String(x.text).trim(),headline:String(x.headline||x.text).replace(/\\n/g,'\n').trim(),sub:String(x.sub||'').trim(),scene:String(x.scene||'').trim()}));
+  txt=String(txt||'').trim();
+  if(!txt) throw new Error('AI 답변 칸이 비어 있어요. Claude/ChatGPT가 준 답변을 복사해서 아래 칸에 붙여넣어주세요.');
+  const norm=txt.replace(/```(?:json)?/gi,'').replace(/[“”]/g,'"').replace(/,\s*([\]}])/g,'$1');
+  const m=norm.match(/[\[{][\s\S]*[\]}]/);
+  if(m){try{
+    const d=JSON.parse(m[0]); const arr=Array.isArray(d)?d:(d.items||d.copies||[]);
+    const out=arr.filter(x=>x&&(x.text||typeof x==='string')).map(x=>typeof x==='string'?{text:x}:x).map(x=>({text:String(x.text).trim(),headline:String(x.headline||x.text).replace(/\\n/g,'\n').trim(),sub:String(x.sub||'').trim(),scene:String(x.scene||'').trim()}));
+    if(out.length) return out;
+  }catch(e){}}
+  // JSON이 아니어도: 번호 목록·줄글 답변에서 문구만 뽑기
+  const lines=txt.split(/\r?\n/).map(l=>l.replace(/^\s*(?:[-*•·]|\d+[.)]|\(\d+\)|#+)\s*/,'').replace(/^["'「『]|["'」』]$/g,'').replace(/\s*\(\d+자\)\s*$/,'').trim())
+    .filter(l=>/[가-힣]/.test(l)&&[...l].length>=8&&[...l].length<=40&&!/[{}]|^(?:text|headline|sub|scene)\b/i.test(l));
+  if(lines.length) return [...new Set(lines)].map(t=>({text:t,headline:t,sub:'',scene:''}));
+  throw new Error('답변에서 문구를 찾지 못했어요. AI에게 "JSON 형식으로 다시 줘"라고 한 뒤 그 답을 붙여넣어주세요.');
 }
 // 문구 10개 생성 + 규칙 위반분 재작성 (최대 2번)
 async function generateCopies(f,eng,onStep=()=>{}){
@@ -360,12 +372,13 @@ $('form').onsubmit=async e=>{
 };
 
 function openManual(){
-  const p=buildPrompt(readForm());$('dlg_prompt').value=p;$('dlg').classList.add('open');
+  const p=buildPrompt(readForm());$('dlg_prompt').value=p;$('dlg_msg').textContent='';$('dlg').classList.add('open');
   navigator.clipboard?.writeText(p).catch(()=>{$('dlg_prompt').select()});
 }
 $('b_prompt').onclick=openManual;
 $('dlg_close').onclick=()=>$('dlg').classList.remove('open');
-$('dlg_apply').onclick=()=>{try{applyItems(parseItems($('dlg_answer').value).slice(0,10));$('dlg').classList.remove('open');$('dlg_answer').value=''}catch(err){alertIn(err.message)}};
+$('dlg_apply').onclick=()=>{const msg=$('dlg_msg');msg.textContent='';try{applyItems(parseItems($('dlg_answer').value).slice(0,10));$('dlg').classList.remove('open');$('dlg_answer').value=''}catch(err){msg.textContent=err.message;alertIn(err.message)}};
+$('dlg_copy').onclick=()=>copyText($('dlg_prompt').value,$('dlg_copy'));
 function alertIn(m){setStatus(m,true)}
 
 function applyItems(list){
